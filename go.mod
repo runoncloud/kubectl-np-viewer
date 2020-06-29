@@ -1,4 +1,4 @@
-module github.com/replicatedhq/krew-plugin-template
+module github.com/runoncloud/kubectl-np
 
 go 1.12
 

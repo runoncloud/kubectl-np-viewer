@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: {{ .PluginName }}
+  name: kubectl-np
 spec:
   version: "v0.1.0"
   platforms:
@@ -9,47 +9,47 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/{{ .Owner }}/{{ .Repo }}/releases/download/v0.1.0/{{ .PluginName }}_linux_amd64.tar.gz
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_linux_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./{{ .PluginName }}"
+    - from: "./kubectl-np"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "{{ .PluginName }}"
+    bin: "kubectl-np"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/{{ .Owner }}/{{ .Repo }}/releases/download/v0.1.0/{{ .PluginName }}_darwin_amd64.tar.gz
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_darwin_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./{{ .PluginName }}"
+    - from: "./kubectl-np"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "{{ .PluginName }}"
+    bin: "kubectl-np"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/{{ .Owner }}/{{ .Repo }}/releases/download/v0.1.0/{{ .PluginName }}_windows_amd64.zip
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_windows_amd64.zip
     sha256: ""
     files:
-    - from: "/{{ .PluginName }}.exe"
+    - from: "/kubectl-np.exe"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "{{ .PluginName }}.exe"
+    bin: "kubectl-np.exe"
   shortDescription: A new plugin
-  homepage: https://github.com/{{ .Owner }}/{{ .Repo }}
+  homepage: https://github.com/runoncloud/kubectl-np
   caveats: |
     Usage:
-      $ kubectl {{ .PluginName }}
+      $ kubectl kubectl-np
 
     For additional options:
-      $ kubectl {{ .PluginName }} --help
-      or https://github.com/{{ .Owner }}/{{ .Repo }}/blob/v0.1.0/doc/USAGE.md
+      $ kubectl kubectl-np --help
+      or https://github.com/runoncloud/kubectl-np/blob/v0.1.0/doc/USAGE.md
 
   description: |
     This is a new plugin
