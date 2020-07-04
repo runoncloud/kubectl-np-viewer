@@ -117,6 +117,10 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 		tableLines = filterLinesBasedOnPodLabels(tableLines, pod)
 	}
 
+	if len(tableLines) == 0 {
+		return errors.New("No network policy was found")
+	}
+
 	renderTable(tableLines)
 	return nil
 }
@@ -200,7 +204,7 @@ func getPod(clientset *kubernetes.Clientset, namespace string, podName string) (
 		metav1.ListOptions{FieldSelector: selector.String()})
 
 	if len(podList.Items) == 0 {
-		err = errors.New("Failed getting pod")
+		err = errors.New(fmt.Sprintf("Pods \"%s\" not found", podName))
 	} else {
 		result = &podList.Items[0]
 	}
