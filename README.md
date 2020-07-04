@@ -1,11 +1,9 @@
-# kubectl-np kubectl
+# kubectl-np-viewer kubectl
 
-A `kubectl` plugin to ...
+A `kubectl` plugin to visualize network policies rules.
 
-## Quick Start
+## Demo
 
-```
-kubectl krew install kubectl-np
-kubectl kubectl-np
-```
+## Examples
 
+## Installation
