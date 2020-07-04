@@ -3,8 +3,8 @@ package cli
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/runoncloud/kubectl-np/pkg/logger"
-	"github.com/runoncloud/kubectl-np/pkg/plugin"
+	"github.com/runoncloud/kubectl-np-viewer/pkg/logger"
+	"github.com/runoncloud/kubectl-np-viewer/pkg/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -57,10 +57,17 @@ func RootCmd() *cobra.Command {
 
 	cobra.OnInitialize(initConfig)
 
-	cmd.Flags().BoolVarP(&ingress, "ingress", "i", false, "Only select ingress type")
-	cmd.Flags().BoolVarP(&egress, "egress", "e", false, " Only select egress type")
-	cmd.Flags().BoolVarP(&allNamespaces, "all-namespaces", "A", false, " All namespaces")
-	cmd.Flags().StringVarP(&pod, "pod", "p", "", "Rule apply to a specific pod")
+	cmd.Flags().BoolVarP(&ingress, "ingress", "i", false,
+		"Only selects network policies rules of type ingress")
+
+	cmd.Flags().BoolVarP(&egress, "egress", "e", false,
+		"Only selects network policies rules of type egress")
+
+	cmd.Flags().BoolVarP(&allNamespaces, "all-namespaces", "A", false,
+		"Selects network policiesrules from all namespaces")
+
+	cmd.Flags().StringVarP(&pod, "pod", "p", "",
+		"Only selects network policies rules applied to a specific pod")
 
 	KubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
 	KubernetesConfigFlags.AddFlags(cmd.Flags())
