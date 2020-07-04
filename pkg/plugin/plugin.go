@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kubectl/pkg/cmd/util"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -113,7 +114,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 		if err != nil {
 			return errors.Wrap(err, "failed getting pod")
 		}
-		tableLines = filterToPod(tableLines, pod)
+		tableLines = filterLinesBasedOnPodLabels(tableLines, pod)
 	}
 
 	renderTable(tableLines)
@@ -132,9 +133,7 @@ func createTableLine(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, p
 	if policy.Spec.PodSelector.Size() == 0 {
 		line.pods = WILDCARD
 	} else {
-		for k, v := range policy.Spec.PodSelector.MatchLabels {
-			line.pods = addCharIfNotEmpty(line.pods, "\n") + fmt.Sprintf("%s=%s", k, v)
-		}
+		line.pods = sortAndJoinLabels(policy.Spec.PodSelector.MatchLabels)
 	}
 
 	if len(ports) == 0 {
@@ -147,17 +146,13 @@ func createTableLine(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, p
 	}
 
 	if sourceType == "PodSelector" {
-		for k, v := range peer.PodSelector.MatchLabels {
-			line.policyPods = addCharIfNotEmpty(line.policyPods, "\n") + fmt.Sprintf("%s=%s", k, v)
-		}
+		line.policyPods = sortAndJoinLabels(peer.PodSelector.MatchLabels)
 		line.policyNamespace = line.namespace
 		line.policyIpBlock = WILDCARD
 	}
 
 	if sourceType == "NamespaceSelector" {
-		for k, v := range peer.NamespaceSelector.MatchLabels {
-			line.policyNamespace = addCharIfNotEmpty(line.policyNamespace, "\n") + fmt.Sprintf("%s=%s", k, v)
-		}
+		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
 		line.policyPods = WILDCARD
 		line.policyIpBlock = WILDCARD
 	}
@@ -172,6 +167,22 @@ func createTableLine(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, p
 		line.policyNamespace = WILDCARD
 	}
 	return line
+}
+
+// Sorts and joins the labels with a new space delimiter
+func sortAndJoinLabels(labels map[string]string) string {
+	result := ""
+	keys := make([]string, 0, len(labels))
+	for k := range labels {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", k, labels[k])
+	}
+
+	return result
 }
 
 // Returns the list of network policies
@@ -247,7 +258,7 @@ func getFlagBool(cmd *cobra.Command, flag string) bool {
 }
 
 // Filters lines in the result table based on the pod labels
-func filterToPod(tableLines []TableLine, pod *corev1.Pod) []TableLine {
+func filterLinesBasedOnPodLabels(tableLines []TableLine, pod *corev1.Pod) []TableLine {
 	var filteredTable []TableLine
 	for _, line := range tableLines {
 		if line.pods != WILDCARD {

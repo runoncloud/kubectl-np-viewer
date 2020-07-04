@@ -11,7 +11,6 @@ builds:
     - darwin
     goarch:
     - amd64
-    - "x86_64"
     - "386"
     env:
       - CGO_ENABLED=0

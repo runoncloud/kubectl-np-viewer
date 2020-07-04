@@ -21,7 +21,7 @@ func RootCmd() *cobra.Command {
 	var pod string
 
 	cmd := &cobra.Command{
-		Use:           "np-viewer",
+		Use:           "kubectl-np-viewer",
 		Short:         "",
 		Long:          `.`,
 		SilenceErrors: true,
@@ -64,7 +64,7 @@ func RootCmd() *cobra.Command {
 		"Only selects network policies rules of type egress")
 
 	cmd.Flags().BoolVarP(&allNamespaces, "all-namespaces", "A", false,
-		"Selects network policiesrules from all namespaces")
+		"Selects network policies rules from all namespaces")
 
 	cmd.Flags().StringVarP(&pod, "pod", "p", "",
 		"Only selects network policies rules applied to a specific pod")
