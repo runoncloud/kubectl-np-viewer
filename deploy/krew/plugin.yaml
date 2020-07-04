@@ -52,4 +52,4 @@ spec:
       or https://github.com/runoncloud/kubectl-np-viewer/blob/master/doc/USAGE.md
 
   description: |
-    A kubectl plugin to visualize network policies rules.
+    A visualization tool for Kubernetes cluster administrator to make network policies rules easily understandable
