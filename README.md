@@ -1,4 +1,4 @@
-# kubectl-np-viewer kubectl
+# kubectl np-viewer
 
 A `kubectl` plugin to visualize network policies rules.
 
@@ -40,9 +40,9 @@ A `kubectl` plugin to visualize network policies rules.
   ```
 
 ## Installation
-There are several ways to install `np-viewer`. The recommended installation method is via `krew`.
+There are several ways to install `np-viewer`.
 
-### Via krew
+### Via krew (Not supported yet)
 Krew is a `kubectl` plugin manager. If you have not yet installed `krew`, get it at
 [https://github.com/kubernetes-sigs/krew](https://github.com/kubernetes-sigs/krew).
 Then installation is as simple as
@@ -53,13 +53,13 @@ The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.m
 
 ### Binaries
  
-#### Linux
+#### OSX
  ```bash
- curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.2/kubectl-np-viewer_darwin_amd64.tar.gz && \
-   gunzip kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
+ curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.1/kubectl-np-viewer_darwin_amd64.tar.gz && \
+   tar zxvf kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
  ```
  
-#### OSX
+#### Linux
  ```bash
  curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.2/kubectl-np-viewer_linux_amd64.tar.gz && \
    gunzip kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
