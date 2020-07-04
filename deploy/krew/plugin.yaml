@@ -1,55 +1,55 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: kubectl-np
+  name: kubectl-np-viewer
 spec:
-  version: "v0.1.0"
+  version: "v1.0.0"
   platforms:
   - selector:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_linux_amd64.tar.gz
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v1.0.0/kubectl-np-viewer_linux_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./kubectl-np"
+    - from: "./np-viewer"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "kubectl-np"
+    bin: "np-viewer"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_darwin_amd64.tar.gz
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v1.0.0/kubectl-np-viewer_darwin_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./kubectl-np"
+    - from: "./np-viewer"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "kubectl-np"
+    bin: "np-viewer"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/runoncloud/kubectl-np/releases/download/v0.1.0/kubectl-np_windows_amd64.zip
+    uri: https://github.com/runoncloud/kubectl-np/releases/download/v1.0.0/kubectl-np-viewer_windows_amd64.zip
     sha256: ""
     files:
-    - from: "/kubectl-np.exe"
+    - from: "/np-viewer.exe"
       to: "."
     - from: LICENSE
       to: "."
-    bin: "kubectl-np.exe"
+    bin: "np-viewer.exe"
   shortDescription: A new plugin
-  homepage: https://github.com/runoncloud/kubectl-np
+  homepage: https://github.com/runoncloud/kubectl-np-viewer
   caveats: |
     Usage:
-      $ kubectl kubectl-np
+      $ kubectl np-viewer
 
     For additional options:
-      $ kubectl kubectl-np --help
-      or https://github.com/runoncloud/kubectl-np/blob/v0.1.0/doc/USAGE.md
+      $ kubectl np-viewer --help
+      or https://github.com/runoncloud/kubectl-np-viewer/blob/v1.0.0/doc/USAGE.md
 
   description: |
-    This is a new plugin
+    A kubectl plugin to visualize network policies rules.

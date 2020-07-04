@@ -7,7 +7,7 @@ test:
 
 .PHONY: bin
 bin: fmt vet
-	go build -o bin/kubectl-np github.com/runoncloud/kubectl-np/cmd/plugin
+	go build -o bin/np-viewer github.com/runoncloud/kubectl-np-viewer/cmd/plugin
 
 .PHONY: fmt
 fmt:

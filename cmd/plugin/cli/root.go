@@ -2,16 +2,14 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/pkg/errors"
 	"github.com/runoncloud/kubectl-np/pkg/logger"
 	"github.com/runoncloud/kubectl-np/pkg/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"os"
+	"strings"
 )
 
 var (
@@ -19,8 +17,11 @@ var (
 )
 
 func RootCmd() *cobra.Command {
+	var ingress, egress, allNamespaces bool
+	var pod string
+
 	cmd := &cobra.Command{
-		Use:           "kubectl-np",
+		Use:           "np-viewer",
 		Short:         "",
 		Long:          `.`,
 		SilenceErrors: true,
@@ -32,27 +33,13 @@ func RootCmd() *cobra.Command {
 			log := logger.NewLogger()
 			log.Info("")
 
-			//s := spin.New()
 			finishedCh := make(chan bool, 1)
-			namespaceName := make(chan string, 1)
-
 			go func() {
-				lastNamespaceName := ""
 				for {
 					select {
 					case <-finishedCh:
 						fmt.Printf("\r")
 						return
-
-					case n := <-namespaceName:
-						lastNamespaceName = n
-
-					case <-time.After(time.Millisecond * 100):
-						if lastNamespaceName == "" {
-							//fmt.Printf("\r  \033[36mSearching for namespaces\033[m %s", s.Next())
-						} else {
-							//fmt.Printf("\r  \033[36mSearching for namespaces\033[m %s (%s)", s.Next(), lastNamespaceName)
-						}
 					}
 				}
 			}()
@@ -64,17 +51,12 @@ func RootCmd() *cobra.Command {
 			if err := plugin.RunPlugin(KubernetesConfigFlags, cmd); err != nil {
 				return errors.Cause(err)
 			}
-
-			log.Info("")
-
 			return nil
 		},
 	}
 
 	cobra.OnInitialize(initConfig)
 
-	var ingress, egress, allNamespaces bool
-	var pod string
 	cmd.Flags().BoolVarP(&ingress, "ingress", "i", false, "Only select ingress type")
 	cmd.Flags().BoolVarP(&egress, "egress", "e", false, " Only select egress type")
 	cmd.Flags().BoolVarP(&allNamespaces, "all-namespaces", "A", false, " All namespaces")

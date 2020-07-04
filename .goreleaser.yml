@@ -1,10 +1,10 @@
-project_name: kubectl-np
+project_name: kubectl-np-viewer
 release:
   github:
     owner: runoncloud
-    name: kubectl-np
+    name: kubectl-np-viewer
 builds:
-  - id: kubectl-np
+  - id: kubectl-np-viewer
     goos:
     - linux
     - windows
@@ -17,11 +17,11 @@ builds:
       - GO111MODULE=on
     main: cmd/plugin/main.go
     ldflags: -s -w
-      -X github.com/runoncloud/kubectl-np/pkg/version.version=
+      -X github.com/runoncloud/kubectl-np-viewer/pkg/version.version=
 archives:
-  - id: kubectl-np
+  - id: kubectl-np-viewer
     builds:
-    - kubectl-np
+    - kubectl-np-viewer
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
     - goos: windows
