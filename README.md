@@ -55,7 +55,7 @@ The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.m
  
 #### OSX
  ```bash
- curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.1/kubectl-np-viewer_darwin_amd64.tar.gz && \
+ curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.2/kubectl-np-viewer_darwin_amd64.tar.gz && \
    tar zxvf kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
  ```
  
