@@ -19,16 +19,15 @@ kubectl krew install np-viewer
 The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.md) for further details.
 
 ### From source
-
-#### Build on host
-
 Requirements:
- - go 1.13 or newer
- - GNU make
+ - go 1.14 or newer
  - git
-
+ - GNU make
+ 
 Compiling:
 ```bash
-export PLATFORMS=$(go env GOOS)
-make all   # binaries will be placed in out/
+curl -L -O https://github.com/guessi/kubectl-grep/releases/download/v1.0.1/kubectl-grep-$(uname -s)-$(uname -m).tar.gz
+tar zxvf kubectl-grep-$(uname -s)-$(uname -m).tar.gz
+mv kubectl-np-viewer /usr/local/bin
+chmod +x /usr/local/bin/kubectl-np-viewer
 ```
