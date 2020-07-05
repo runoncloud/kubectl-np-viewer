@@ -10,39 +10,40 @@ A `kubectl` plugin to visualize network policies rules.
 
 - Prints all network policies rules for the current namespace
   ```bash
-  kubectl-np-viewer
+  kubectl np-viewer
   ```
 
 - Prints all network policies rules for a specific namespace
   ```bash
-  kubectl-np-viewer -n default
+  kubectl np-viewer -n default
   ```
   
 - Prints all network policies rules for all namespaces
   ```bash
-  kubectl-np-viewer --all-namespaces
-  kubectl-np-viewer -A
+  kubectl np-viewer --all-namespaces
+  kubectl np-viewer -A
   ```
   
 - Prints network policies rules of type ingress for the current namespace
   ```bash
-  kubectl-np-viewer -i
+  kubectl np-viewer -i
   ```
 
 - Prints network policies rules of type egress for the current namespace
   ```bash
-  kubectl-np-viewer -e
+  kubectl np-viewer -e
   ```
   
 - Prints network policies rules affecting a specific pod in the current namespace
   ```bash
-  kubectl-np-viewer -p pod-name
+  kubectl np-viewer -p pod-name
   ```
 
 ## Installation
-There are several ways to install `np-viewer`.
+There are several ways to install `np-viewer`. The recommended installation is via the `kubectl` plugin manager 
+called [`krew`](https://github.com/kubernetes-sigs/krew).
 
-### Via krew (Not supported yet)
+### Via krew
 Krew is a `kubectl` plugin manager. If you have not yet installed `krew`, get it at
 [https://github.com/kubernetes-sigs/krew](https://github.com/kubernetes-sigs/krew).
 Then installation is as simple as
@@ -79,5 +80,5 @@ Requirements:
  - git
  
  ```bash
- make bin    # binaries will be placed in bin/
+ make bin           # binaries will be placed in bin/
  ```
