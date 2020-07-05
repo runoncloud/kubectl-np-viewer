@@ -1,0 +1,48 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: np-viewer
+spec:
+  version: "v1.0.3"
+  platforms:
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_linux_amd64.tar.gz" .TagName }}
+      files:
+        - from: "./kubectl-np-viewer"
+          to: "np-viewer"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer"
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_darwin_amd64.tar.gz" .TagName }}
+      files:
+        - from: "./kubectl-np-viewer"
+          to: "np-viewer"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer"
+    - selector:
+        matchLabels:
+          os: windows
+          arch: amd64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_windows_amd64.zip" .TagName }}
+      files:
+        - from: "/kubectl-np-viewer.exe"
+          to: "np-viewer.exe"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer.exe"
+  shortDescription: Network Policies rules viewer
+  homepage: https://github.com/runoncloud/kubectl-np-viewer
+  caveats: |
+    In order to get the plugin running you will need permissions to GET
+    Network Policies in at least one namespace.
+  description: |
+    A visualization tool for Kubernetes cluster administrator to make Network
+    Policies rules easily understandable.
