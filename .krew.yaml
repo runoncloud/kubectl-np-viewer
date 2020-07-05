@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: np-viewer
 spec:
-  version: "v1.0.3"
+  version: {{ .TagName }}
   platforms:
     - selector:
         matchLabels:
@@ -42,7 +42,7 @@ spec:
   homepage: https://github.com/runoncloud/kubectl-np-viewer
   caveats: |
     In order to get the plugin running you will need permissions to GET
-    Network Policies in at least one namespace.
+    Network Policies in at least one Namespace.
   description: |
     A visualization tool for Kubernetes cluster administrator to make Network
     Policies rules easily understandable.
