@@ -19,8 +19,12 @@ import (
 )
 
 const (
-	WILDCARD = "*"
+	Wildcard = "*"
+	Ingress  = "Ingress"
+	Egress   = "Egress"
 )
+
+type SourceType int
 
 type TableLine struct {
 	networkPolicyName string
@@ -32,6 +36,12 @@ type TableLine struct {
 	policyIpBlock     string
 	policyPort        string
 }
+
+const (
+	PodSelector       SourceType = 1
+	NamespaceSelector            = 2
+	IpBlock                      = 3
+)
 
 // Runs the plugin
 func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) error {
@@ -53,12 +63,11 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 		return errors.WithMessage(err, "Failed getting namespace")
 	}
 
-	ingress := getFlagBool(cmd, "ingress")
-	egress := getFlagBool(cmd, "egress")
-	allNamespace := getFlagBool(cmd, "all-namespaces")
+	isIngress := getFlagBool(cmd, "ingress")
+	isEgress := getFlagBool(cmd, "egress")
 	podName := util.GetFlagString(cmd, "pod")
 
-	if allNamespace {
+	if getFlagBool(cmd, "all-namespaces") {
 		namespace = ""
 	}
 
@@ -70,40 +79,46 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 	var tableLines []TableLine
 	for _, policy := range networkPolicies.Items {
 
-		if ingress || (!ingress && !egress) {
+		if isIngress || (!isIngress && !isEgress) {
 			for _, ingresses := range policy.Spec.Ingress {
 				for _, peer := range ingresses.From {
 					if peer.PodSelector != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, ingresses.Ports,
-							"ingress", "PodSelector"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
+							Ingress, PodSelector))
 					}
 					if peer.NamespaceSelector != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, ingresses.Ports,
-							"ingress", "NamespaceSelector"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
+							Ingress, NamespaceSelector))
 					}
 					if peer.IPBlock != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, ingresses.Ports,
-							"ingress", "IPBlock"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
+							Ingress, IpBlock))
 					}
+				}
+				if len(ingresses.Ports) > 0 && len(ingresses.From) == 0 {
+					tableLines = append(tableLines, createTableLineForPortBlock(policy, ingresses.Ports, Ingress))
 				}
 			}
 		}
 
-		if egress || (!egress && !ingress) {
+		if isEgress || (!isEgress && !isIngress) {
 			for _, egresses := range policy.Spec.Egress {
 				for _, peer := range egresses.To {
 					if peer.PodSelector != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, egresses.Ports,
-							"egress", "PodSelector"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
+							Egress, PodSelector))
 					}
 					if peer.NamespaceSelector != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, egresses.Ports,
-							"egress", "NamespaceSelector"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
+							Egress, NamespaceSelector))
 					}
 					if peer.IPBlock != nil {
-						tableLines = append(tableLines, createTableLine(policy, peer, egresses.Ports,
-							"egress", "IPBlock"))
+						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
+							Egress, IpBlock))
 					}
+				}
+				if len(egresses.Ports) > 0 && len(egresses.To) == 0 {
+					tableLines = append(tableLines, createTableLineForPortBlock(policy, egresses.Ports, Egress))
 				}
 			}
 		}
@@ -126,8 +141,8 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 }
 
 // Creates a new line for the result table
-func createTableLine(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, ports []netv1.NetworkPolicyPort,
-	policyType string, sourceType string) TableLine {
+func createTableLine(policy netv1.NetworkPolicy, ports []netv1.NetworkPolicyPort,
+	policyType string) TableLine {
 
 	var line TableLine
 	line.networkPolicyName = policy.Name
@@ -135,41 +150,61 @@ func createTableLine(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, p
 	line.policyType = policyType
 
 	if policy.Spec.PodSelector.Size() == 0 {
-		line.pods = WILDCARD
+		line.pods = Wildcard
 	} else {
 		line.pods = sortAndJoinLabels(policy.Spec.PodSelector.MatchLabels)
 	}
 
 	if len(ports) == 0 {
-		line.policyPort = WILDCARD
+		line.policyPort = Wildcard
 	} else {
 		for _, port := range ports {
 			line.policyPort = addCharIfNotEmpty(line.policyPort, "\n") +
 				fmt.Sprintf("%s:%s", getProtocol(*port.Protocol), port.Port)
 		}
 	}
+	return line
+}
 
-	if sourceType == "PodSelector" {
+// Creates a new line for the result table for a specific source type
+func createTableLineForSourceType(policy netv1.NetworkPolicy, peer netv1.NetworkPolicyPeer, ports []netv1.NetworkPolicyPort,
+	policyType string, sourceType SourceType) TableLine {
+
+	line := createTableLine(policy, ports, policyType)
+
+	if sourceType == PodSelector {
 		line.policyPods = sortAndJoinLabels(peer.PodSelector.MatchLabels)
 		line.policyNamespace = line.namespace
-		line.policyIpBlock = WILDCARD
+		line.policyIpBlock = Wildcard
 	}
 
-	if sourceType == "NamespaceSelector" {
+	if sourceType == NamespaceSelector {
 		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
-		line.policyPods = WILDCARD
-		line.policyIpBlock = WILDCARD
+		line.policyPods = Wildcard
+		line.policyIpBlock = Wildcard
 	}
 
-	if sourceType == "IPBlock" {
+	if sourceType == IpBlock {
 		var exceptions string
 		for _, exception := range peer.IPBlock.Except {
 			exceptions = addCharIfNotEmpty(exceptions, "\n") + exception
 		}
 		line.policyIpBlock = fmt.Sprintf("CIDR: %s Except: [%s]", peer.IPBlock.CIDR, exceptions)
-		line.policyPods = WILDCARD
-		line.policyNamespace = WILDCARD
+		line.policyPods = Wildcard
+		line.policyNamespace = Wildcard
 	}
+
+	return line
+}
+
+// Creates a new line for the result table for a rule that only have ports
+func createTableLineForPortBlock(policy netv1.NetworkPolicy, ports []netv1.NetworkPolicyPort,
+	policyType string) TableLine {
+
+	line := createTableLine(policy, ports, policyType)
+	line.policyNamespace = Wildcard
+	line.policyPods = Wildcard
+	line.policyIpBlock = Wildcard
 	return line
 }
 
@@ -265,7 +300,7 @@ func getFlagBool(cmd *cobra.Command, flag string) bool {
 func filterLinesBasedOnPodLabels(tableLines []TableLine, pod *corev1.Pod) []TableLine {
 	var filteredTable []TableLine
 	for _, line := range tableLines {
-		if line.pods != WILDCARD {
+		if line.pods != Wildcard {
 			labels := strings.Split(line.pods, "\n")
 			for _, label := range labels {
 				keyValue := strings.Split(label, "=")
