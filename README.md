@@ -1,4 +1,5 @@
 # kubectl np-viewer
+![release](https://github.com/runoncloud/kubectl-np-viewer/workflows/release/badge.svg)
 
 A `kubectl` plugin to visualize network policies rules.
 
