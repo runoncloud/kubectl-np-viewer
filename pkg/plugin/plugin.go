@@ -19,6 +19,7 @@ import (
 )
 
 const (
+	Deny     = "-"
 	Wildcard = "*"
 	Ingress  = "Ingress"
 	Egress   = "Egress"
@@ -80,7 +81,18 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 	for _, policy := range networkPolicies.Items {
 
 		if isIngress || (!isIngress && !isEgress) {
+			// If Default Deny
+			if containsPolicyTypes(policy.Spec.PolicyTypes, netv1.PolicyTypeIngress) && policy.Spec.Ingress == nil {
+				tableLines = append(tableLines, createTableLineWithDeny(policy, Ingress))
+			}
+
 			for _, ingresses := range policy.Spec.Ingress {
+				// If Wide Open
+				if ingresses.From == nil && ingresses.Ports == nil {
+					tableLines = append(tableLines, createTableLineWithWildcard(policy, Ingress))
+					continue
+				}
+
 				for _, peer := range ingresses.From {
 					if peer.PodSelector != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
@@ -102,7 +114,18 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 		}
 
 		if isEgress || (!isEgress && !isIngress) {
+			// If Default Deny
+			if containsPolicyTypes(policy.Spec.PolicyTypes, netv1.PolicyTypeEgress) && policy.Spec.Egress == nil {
+				tableLines = append(tableLines, createTableLineWithDeny(policy, Egress))
+			}
+
 			for _, egresses := range policy.Spec.Egress {
+				// If Wide Open
+				if egresses.To == nil && egresses.Ports == nil {
+					tableLines = append(tableLines, createTableLineWithWildcard(policy, Egress))
+					continue
+				}
+
 				for _, peer := range egresses.To {
 					if peer.PodSelector != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
@@ -163,6 +186,23 @@ func createTableLine(policy netv1.NetworkPolicy, ports []netv1.NetworkPolicyPort
 				fmt.Sprintf("%s:%s", getProtocol(*port.Protocol), port.Port)
 		}
 	}
+	return line
+}
+
+func createTableLineWithDeny(policy netv1.NetworkPolicy, policyType string) TableLine {
+	line := createTableLine(policy, []netv1.NetworkPolicyPort{}, policyType)
+	line.policyPods = Deny
+	line.policyIpBlock = Deny
+	line.policyNamespace = Deny
+	line.policyPort = Deny
+	return line
+}
+
+func createTableLineWithWildcard(policy netv1.NetworkPolicy, policyType string) TableLine {
+	line := createTableLine(policy, []netv1.NetworkPolicyPort{}, policyType)
+	line.policyPods = Wildcard
+	line.policyIpBlock = Wildcard
+	line.policyNamespace = Wildcard
 	return line
 }
 
@@ -313,4 +353,14 @@ func filterLinesBasedOnPodLabels(tableLines []TableLine, pod *corev1.Pod) []Tabl
 		}
 	}
 	return filteredTable
+}
+
+// Returns true if the slice contains the policy type
+func containsPolicyTypes(s []netv1.PolicyType, value netv1.PolicyType) bool {
+	for _, a := range s {
+		if a == value {
+			return true
+		}
+	}
+	return false
 }
