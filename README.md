@@ -58,13 +58,13 @@ The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.m
 #### OSX
  ```bash
  curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_darwin_amd64.tar.gz && \
-   tar zxvf kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
+   tar zxvf kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np_viewer $GOPATH/bin/
  ```
  
 #### Linux
  ```bash
  curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_linux_amd64.tar.gz && \
-   gunzip kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
+   gunzip kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np_viewer $GOPATH/bin/
  ```
 
 #### Windows
@@ -72,6 +72,8 @@ The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.m
  ```
  https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_windows_amd64.zip
  ```
+
+Note that the file name in the GOPATH should be `kubectl-np_viewer` if you want to be able to use it with `kubectl`
 
 ### From source
 
