@@ -57,20 +57,20 @@ The plugin will be available as `kubectl np-viewer`, see [doc/USAGE](doc/USAGE.m
  
 #### OSX
  ```bash
- curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.5/kubectl-np-viewer_darwin_amd64.tar.gz && \
+ curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_darwin_amd64.tar.gz && \
    tar zxvf kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
  ```
  
 #### Linux
  ```bash
- curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.5/kubectl-np-viewer_linux_amd64.tar.gz && \
+ curl -L -o kubectl-np-viewer.gz https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_linux_amd64.tar.gz && \
    gunzip kubectl-np-viewer.gz && chmod +x kubectl-np-viewer && mv kubectl-np-viewer $GOPATH/bin/
  ```
 
 #### Windows
 
  ```
- https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.5/kubectl-np-viewer_windows_amd64.zip
+ https://github.com/runoncloud/kubectl-np-viewer/releases/download/v1.0.6/kubectl-np-viewer_windows_amd64.zip
  ```
 
 ### From source
