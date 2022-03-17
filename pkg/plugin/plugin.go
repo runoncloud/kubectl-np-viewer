@@ -3,6 +3,10 @@ package plugin
 import (
 	"context"
 	"fmt"
+	"os"
+	"sort"
+	"strings"
+
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -13,9 +17,6 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kubectl/pkg/cmd/util"
-	"os"
-	"sort"
-	"strings"
 )
 
 const (
@@ -40,8 +41,8 @@ type TableLine struct {
 
 const (
 	PodSelector       SourceType = 1
-	NamespaceSelector            = 2
-	IpBlock                      = 3
+	NamespaceSelector SourceType = 2
+	IpBlock           SourceType = 3
 )
 
 // Runs the plugin

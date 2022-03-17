@@ -2,14 +2,15 @@ package cli
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/pkg/errors"
 	"github.com/runoncloud/kubectl-np-viewer/pkg/logger"
 	"github.com/runoncloud/kubectl-np-viewer/pkg/plugin"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"os"
-	"strings"
 )
 
 var (
