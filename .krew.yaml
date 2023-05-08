@@ -38,6 +38,39 @@ spec:
         - from: LICENSE
           to: "."
       bin: "np-viewer.exe"
+    - selector:
+        matchLabels:
+          os: linux
+          arch: arm64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_linux_arm64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "./kubectl-np-viewer"
+          to: "np-viewer"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer"
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: arm64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_darwin_arm64.tar.gz" .TagName | indent 6 }}
+      files:
+        - from: "./kubectl-np-viewer"
+          to: "np-viewer"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer"
+    - selector:
+        matchLabels:
+          os: windows
+          arch: arm64
+      {{addURIAndSha "https://github.com/runoncloud/kubectl-np-viewer/releases/download/{{ .TagName }}/kubectl-np-viewer_windows_arm64.zip" .TagName | indent 6 }}
+      files:
+        - from: "/kubectl-np-viewer.exe"
+          to: "np-viewer.exe"
+        - from: LICENSE
+          to: "."
+      bin: "np-viewer.exe"
   shortDescription: Network Policies rules viewer
   homepage: https://github.com/runoncloud/kubectl-np-viewer
   caveats: |
