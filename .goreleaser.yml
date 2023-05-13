@@ -5,6 +5,8 @@ release:
     name: kubectl-np-viewer
 builds:
   - id: kubectl-np-viewer
+    env:
+      - CGO_ENABLED=0
     goos:
     - linux
     - windows
@@ -16,12 +18,7 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
-    env:
-      - CGO_ENABLED=0
-      - GO111MODULE=on
-    main: cmd/plugin/main.go
-    ldflags: -s -w
-      -X github.com/runoncloud/kubectl-np-viewer/pkg/version.version=
+    main: cmd/plugin/main.go  
 archives:
   - id: kubectl-np-viewer
     builds:
