@@ -40,9 +40,10 @@ type TableLine struct {
 }
 
 const (
-	PodSelector       SourceType = 1
-	NamespaceSelector SourceType = 2
-	IpBlock           SourceType = 3
+	PodSelector             SourceType = 1
+	NamespaceSelector       SourceType = 2
+	IpBlock                 SourceType = 3
+	PodAndNameSpaceSelector SourceType = 4
 )
 
 // Runs the plugin
@@ -95,13 +96,18 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 				}
 
 				for _, peer := range ingresses.From {
-					if peer.PodSelector != nil {
+					if peer.PodSelector != nil && peer.NamespaceSelector != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
-							Ingress, PodSelector))
-					}
-					if peer.NamespaceSelector != nil {
-						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
-							Ingress, NamespaceSelector))
+							Ingress, PodAndNameSpaceSelector))
+					} else {
+						if peer.PodSelector != nil {
+							tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
+								Ingress, PodSelector))
+						}
+						if peer.NamespaceSelector != nil {
+							tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
+								Ingress, NamespaceSelector))
+						}
 					}
 					if peer.IPBlock != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, ingresses.Ports,
@@ -128,13 +134,18 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 				}
 
 				for _, peer := range egresses.To {
-					if peer.PodSelector != nil {
+					if peer.PodSelector != nil && peer.NamespaceSelector != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
-							Egress, PodSelector))
-					}
-					if peer.NamespaceSelector != nil {
-						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
-							Egress, NamespaceSelector))
+							Egress, PodAndNameSpaceSelector))
+					} else {
+						if peer.PodSelector != nil {
+							tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
+								Egress, PodSelector))
+						}
+						if peer.NamespaceSelector != nil {
+							tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
+								Egress, NamespaceSelector))
+						}
 					}
 					if peer.IPBlock != nil {
 						tableLines = append(tableLines, createTableLineForSourceType(policy, peer, egresses.Ports,
@@ -222,6 +233,12 @@ func createTableLineForSourceType(policy netv1.NetworkPolicy, peer netv1.Network
 	if sourceType == NamespaceSelector {
 		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
 		line.policyPods = Wildcard
+		line.policyIpBlock = Wildcard
+	}
+
+	if sourceType == PodAndNameSpaceSelector {
+		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
+		line.policyPods = sortAndJoinLabels(peer.PodSelector.MatchLabels)
 		line.policyIpBlock = Wildcard
 	}
 
