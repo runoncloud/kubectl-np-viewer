@@ -13,6 +13,9 @@ builds:
     - amd64
     - arm64
     - "386"
+    ignore:
+      - goos: windows
+        goarch: arm64
     env:
       - CGO_ENABLED=0
       - GO111MODULE=on
