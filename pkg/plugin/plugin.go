@@ -187,7 +187,7 @@ func createTableLine(policy netv1.NetworkPolicy, ports []netv1.NetworkPolicyPort
 	if policy.Spec.PodSelector.Size() == 0 {
 		line.pods = Wildcard
 	} else {
-		line.pods = sortAndJoinLabels(policy.Spec.PodSelector.MatchLabels)
+		line.pods = sortAndJoinLabels(policy.Spec.PodSelector)
 	}
 
 	if len(ports) == 0 {
@@ -225,20 +225,20 @@ func createTableLineForSourceType(policy netv1.NetworkPolicy, peer netv1.Network
 	line := createTableLine(policy, ports, policyType)
 
 	if sourceType == PodSelector {
-		line.policyPods = sortAndJoinLabels(peer.PodSelector.MatchLabels)
+		line.policyPods = sortAndJoinLabels(*peer.PodSelector)
 		line.policyNamespace = line.namespace
 		line.policyIpBlock = Wildcard
 	}
 
 	if sourceType == NamespaceSelector {
-		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
+		line.policyNamespace = sortAndJoinLabels(*peer.NamespaceSelector)
 		line.policyPods = Wildcard
 		line.policyIpBlock = Wildcard
 	}
 
 	if sourceType == PodAndNameSpaceSelector {
-		line.policyNamespace = sortAndJoinLabels(peer.NamespaceSelector.MatchLabels)
-		line.policyPods = sortAndJoinLabels(peer.PodSelector.MatchLabels)
+		line.policyNamespace = sortAndJoinLabels(*peer.NamespaceSelector)
+		line.policyPods = sortAndJoinLabels(*peer.PodSelector)
 		line.policyIpBlock = Wildcard
 	}
 
@@ -266,8 +266,18 @@ func createTableLineForPortBlock(policy netv1.NetworkPolicy, ports []netv1.Netwo
 	return line
 }
 
-// Sorts and joins the labels with a new space delimiter
-func sortAndJoinLabels(labels map[string]string) string {
+// Sorts and joins the labels with a new space delimiter based on podSelector field
+func sortAndJoinLabels(podSelector metav1.LabelSelector) string {
+
+	if len(podSelector.MatchExpressions) != 0 {
+		return sortAndJoinLabelsForMatchExpressions(podSelector.MatchExpressions)
+	}
+
+	return sortAndJoinLabelsForMatchLabels(podSelector.MatchLabels)
+}
+
+// Sorts and joins the labels with a new space delimiter by parsing MatchLabels field
+func sortAndJoinLabelsForMatchLabels(labels map[string]string) string {
 	result := ""
 	keys := make([]string, 0, len(labels))
 	for k := range labels {
@@ -277,6 +287,28 @@ func sortAndJoinLabels(labels map[string]string) string {
 
 	for _, k := range keys {
 		result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", k, labels[k])
+	}
+
+	return result
+}
+
+// Sorts and joins the labels with a new space delimiter by parsing MatchExpressions field
+func sortAndJoinLabelsForMatchExpressions(matchExpressions []metav1.LabelSelectorRequirement) string {
+	result := ""
+	for _, expression := range matchExpressions {
+		key := expression.Key
+		switch expression.Operator {
+		case metav1.LabelSelectorOpExists:
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, "*")
+		case metav1.LabelSelectorOpNotIn:
+			labelValues := "(" + strings.Join(expression.Values, "|") + ")"
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, "^"+labelValues)
+		case metav1.LabelSelectorOpIn:
+			labelValues := "(" + strings.Join(expression.Values, "|") + ")"
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, labelValues)
+		case metav1.LabelSelectorOpDoesNotExist:
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("!%s=%s", key, "*")
+		}
 	}
 
 	return result
