@@ -293,6 +293,7 @@ func sortAndJoinLabelsForMatchLabels(labels map[string]string) string {
 }
 
 // Sorts and joins the labels with a new space delimiter by parsing MatchExpressions field
+// possible operators: Exists, DoesNotExist, In, NotIn
 func sortAndJoinLabelsForMatchExpressions(matchExpressions []metav1.LabelSelectorRequirement) string {
 	result := ""
 	for _, expression := range matchExpressions {
@@ -300,14 +301,14 @@ func sortAndJoinLabelsForMatchExpressions(matchExpressions []metav1.LabelSelecto
 		switch expression.Operator {
 		case metav1.LabelSelectorOpExists:
 			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, "*")
-		case metav1.LabelSelectorOpNotIn:
-			labelValues := "(" + strings.Join(expression.Values, "|") + ")"
-			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, "^"+labelValues)
+		case metav1.LabelSelectorOpDoesNotExist:
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("!(%s)=%s", key, "*")
 		case metav1.LabelSelectorOpIn:
 			labelValues := "(" + strings.Join(expression.Values, "|") + ")"
 			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, labelValues)
-		case metav1.LabelSelectorOpDoesNotExist:
-			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("!%s=%s", key, "*")
+		case metav1.LabelSelectorOpNotIn:
+			labelValues := "(" + strings.Join(expression.Values, "|") + ")"
+			result = addCharIfNotEmpty(result, "\n") + fmt.Sprintf("%s=%s", key, "!"+labelValues)
 		}
 	}
 
@@ -392,17 +393,80 @@ func filterLinesBasedOnPodLabels(tableLines []TableLine, pod *corev1.Pod) []Tabl
 	for _, line := range tableLines {
 		if line.pods != Wildcard {
 			labels := strings.Split(line.pods, "\n")
-			for _, label := range labels {
-				keyValue := strings.Split(label, "=")
-				if pod.Labels[keyValue[0]] == keyValue[1] {
-					filteredTable = append(filteredTable, line)
+			appendLine := true
+			for _, labelCondition := range labels {
+				if !checkLabelCondition(labelCondition, pod) {
+					appendLine = false
+					break
 				}
+			}
+			if appendLine {
+				filteredTable = append(filteredTable, line)
 			}
 		} else {
 			filteredTable = append(filteredTable, line)
 		}
 	}
 	return filteredTable
+}
+
+// checkLabelCondition: check that a single label selector condition line is satisfied given a pod spec.
+// It support matchLabels and matchExpressions conditions type
+func checkLabelCondition(labelCondition string, pod *corev1.Pod) bool {
+	keyValue := strings.Split(labelCondition, "=")
+	key := keyValue[0]
+	value := keyValue[1]
+	if strings.HasPrefix(key, "!(") { // Label line: '!(label)=*'
+		return checkDoesNotExistCondition(key, pod)
+	} else if value == "*" { // prefix should be != '!(' also, Label line: 'label=*'
+		return checkExistCondition(key, pod)
+	} else if strings.HasPrefix(value, "!(") { // Label line: 'label=(value1|...|valueN)'
+		return checkNotInCondition(key, value, pod)
+	} else if strings.HasPrefix(value, "(") { // Label line: 'label=!(value1|...|valueN)'
+		return checkInCondition(key, value, pod)
+	} else if pod.Labels[keyValue[0]] != keyValue[1] { // simple label filter
+		return false
+	}
+
+	return true
+}
+
+// checkExistCondition: check an Exist filter against a pod spec. label line: 'label=*'.
+// Return true if the label key exist in pod spec
+func checkExistCondition(key string, pod *corev1.Pod) bool {
+	key = strings.TrimSuffix(strings.TrimPrefix(key, "("), ")")
+	_, exist := pod.Labels[key]
+	return exist
+}
+
+// checkDoesNotExistCondition: check a DoesNotExist filter against a pod spec. Label line: '!(label)=*'
+// // Return true if the label key does not exist in pod spec
+func checkDoesNotExistCondition(key string, pod *corev1.Pod) bool {
+	isolateKey := strings.TrimSuffix(strings.TrimPrefix(key, "!("), ")")
+	return !checkExistCondition(isolateKey, pod)
+}
+
+// checkInCondition: check an NotIn filter against a pod spec. label line: 'label=(value1|...|valueN)'
+// Return true if the label key if and only if the label exist and does not have specific values
+func checkInCondition(key, value string, pod *corev1.Pod) bool {
+	podLabelValue, exist := pod.Labels[key]
+	if !exist {
+		return false
+	}
+
+	values := strings.Split(strings.TrimSuffix(strings.TrimPrefix(value, "("), ")"), "|")
+	for _, value := range values {
+		if value == podLabelValue {
+			return true
+		}
+	}
+	return false
+}
+
+// checkNotInCondition: check an NotIn filter against a pod spec. label line: 'label=!(value1|...|valueN)'
+// Return true if the label key is not set in pod OR do not have specific values
+func checkNotInCondition(key, value string, pod *corev1.Pod) bool {
+	return !checkInCondition(key, strings.TrimPrefix(value, "!"), pod)
 }
 
 // Returns true if the slice contains the policy type
