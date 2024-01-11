@@ -16,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/kubectl/pkg/cmd/util"
 )
 
@@ -78,26 +77,6 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, cmd *cobra.Command) e
 	networkPolicies, err := getNetworkPolicies(clientset, namespace)
 	if err != nil {
 		return errors.Wrap(err, "failed to list network policies")
-	}
-	//add netpol
-	addNp, err := cmd.Flags().GetStringSlice("add-np")
-	if err != nil {
-		return errors.Wrap(err, "failed to get list from --add-np flag")
-	}
-	for _, yamlNp := range addNp {
-		netpol, err := decodeNetpolFromYaml(yamlNp)
-		if err != nil {
-			return errors.Wrap(err, "failed todecode yaml file")
-		}
-		networkPolicies.Items = append(networkPolicies.Items, *netpol)
-	}
-	// delete netpol
-	delNp, err := cmd.Flags().GetStringSlice("del-np")
-	if err != nil {
-		return errors.Wrap(err, "failed to get list from --del-np flag")
-	}
-	for _, netpol := range delNp {
-		networkPolicies.Items = deleteNetworkPolicy(networkPolicies.Items, netpol)
 	}
 
 	var tableLines []TableLine
@@ -434,34 +413,4 @@ func containsPolicyTypes(s []netv1.PolicyType, value netv1.PolicyType) bool {
 		}
 	}
 	return false
-}
-
-// decodeNetpolFromYaml: decode a NetworkPolicy YAML declaration within struct
-func decodeNetpolFromYaml(file string) (netpol *netv1.NetworkPolicy, err error) {
-	decode := scheme.Codecs.UniversalDeserializer().Decode
-	stream, err := os.ReadFile(file)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to read netpol YAML file")
-	}
-	obj, gKV, err := decode(stream, nil, nil)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to decode netpol YAML file")
-	}
-	if gKV.Kind == "NetworkPolicy" {
-		netpol = obj.(*netv1.NetworkPolicy)
-	}
-	return netpol, nil
-}
-
-// deleteNetworkPolicy: delete a network policy from a list
-func deleteNetworkPolicy(networkPolicies []netv1.NetworkPolicy, nameToDelete string) []netv1.NetworkPolicy {
-	var updatedList []netv1.NetworkPolicy
-
-	for _, policy := range networkPolicies {
-		if policy.Name != nameToDelete {
-			updatedList = append(updatedList, policy)
-		}
-	}
-
-	return updatedList
 }

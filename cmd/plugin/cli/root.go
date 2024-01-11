@@ -20,7 +20,6 @@ var (
 func RootCmd() *cobra.Command {
 	var ingress, egress, allNamespaces bool
 	var pod string
-	var addNp, delNp []string
 
 	cmd := &cobra.Command{
 		Use:           "kubectl-np-viewer",
@@ -71,11 +70,6 @@ func RootCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&pod, "pod", "p", "",
 		"Only selects network policies rules applied to a specific pod")
 
-	cmd.Flags().StringSliceVarP(&addNp, "add-np", "a", []string{},
-		"Additional netpol to use without applying in the cluster.(must be relative path to netpol YAML file)")
-
-	cmd.Flags().StringSliceVarP(&delNp, "del-np", "d", []string{},
-		"Delete netpol from output. (must be netpol name))")
 	KubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
 	KubernetesConfigFlags.AddFlags(cmd.Flags())
 
